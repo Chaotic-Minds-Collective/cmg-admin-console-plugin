@@ -47,7 +47,13 @@ jobs:
       - name: Regenerate the lockfile from the pinned frontend dependencies
         run: |
           rm -f package-lock.json
-          npm install --package-lock-only --ignore-scripts --no-audit --no-fund
+          npm install --package-lock-only --ignore-scripts --no-audit --no-fund --verbose
+      - name: Print npm dependency resolution details on failure
+        if: failure()
+        run: |
+          log_file="$(ls -t ~/.npm/_logs/*debug-0.log | head -n 1)"
+          echo "npm debug log: ${log_file}"
+          tail -n 160 "${log_file}"
       - name: Commit the regenerated lockfile to this migration branch
         env:
           HEAD_REF: ${{ github.head_ref }}
