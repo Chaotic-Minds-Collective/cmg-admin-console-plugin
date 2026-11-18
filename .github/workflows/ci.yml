@@ -27,52 +27,7 @@ jobs:
       - name: Run mocked backend regressions
         run: python -m unittest discover -s server -p 'test_*.py' -v
 
-  refresh-client-lockfile:
-    if: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && github.head_ref == 'fix/admin-console-vite-migration-2026-11-18' }}
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    defaults:
-      run:
-        working-directory: client
-    steps:
-      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
-        with:
-          ref: ${{ github.head_ref }}
-      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
-        with:
-          node-version: '22'
-          cache: npm
-          cache-dependency-path: client/package-lock.json
-      - name: Install the pinned npm version
-        run: npm install --global npm@11.21.3
-      - name: Regenerate the lockfile from the pinned frontend dependencies
-        run: |
-          rm -f package-lock.json
-          npm install --package-lock-only --ignore-scripts --no-audit --no-fund --verbose
-      - name: Print npm dependency resolution details on failure
-        if: failure()
-        run: |
-          log_file="$(ls -t ~/.npm/_logs/*debug-0.log | head -n 1)"
-          echo "npm debug log: ${log_file}"
-          tail -n 160 "${log_file}"
-      - name: Commit the regenerated lockfile to this migration branch
-        env:
-          HEAD_REF: ${{ github.head_ref }}
-        run: |
-          git -C .. add client/package-lock.json
-          if git -C .. diff --cached --quiet; then
-            echo "Lockfile already current."
-            exit 0
-          fi
-          git -C .. config user.name "github-actions[bot]"
-          git -C .. config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git -C .. commit -m "chore(deps): regenerate frontend lockfile"
-          git -C .. push origin "HEAD:${HEAD_REF}"
-
   client-tests:
-    needs: refresh-client-lockfile
-    if: ${{ always() && needs['refresh-client-lockfile'].result != 'failure' && needs['refresh-client-lockfile'].result != 'cancelled' }}
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -81,8 +36,6 @@ jobs:
       CI: 'true'
     steps:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
-        with:
-          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && github.head_ref == 'fix/admin-console-vite-migration-2026-11-18' && github.head_ref || github.sha }}
       - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
         with:
           node-version: '22'
@@ -92,6 +45,8 @@ jobs:
         run: npm install --global npm@11.21.3
       - name: Install locked dependencies without lifecycle scripts
         run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Audit production dependencies
+        run: npm audit --omit=dev --audit-level=high
       - name: Run frontend regressions
         run: npm test
       - name: Build frontend
