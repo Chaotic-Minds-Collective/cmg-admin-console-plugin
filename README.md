@@ -16,7 +16,7 @@ The **Chaotic Minds Gaming (CMG) ATLAS Admin Console Plugin** provides a React d
 <!-- coderabbit-ai-generated-section:v1:5343b04ed580d74b263c4928f8f3be6c401a3542e35f1b2cd09070ee41f0bed3 -->
 
 - Python 3.10 or later
-- Node.js 20.19 or later and npm
+- Node.js 20.19 or later and npm 11.21.3
 - The game server/RCON configuration required by your deployment
 - `mcrcon`, available on the admin API process's `PATH` and executable by that process, is required for broadcasts.
 
@@ -68,6 +68,7 @@ python grid_status_api.py
 In a third terminal, start the React client (Vite development server on port 3000):
 
 ```powershell
+npm install --global npm@11.21.3
 cd client
 npm install
 npm start
