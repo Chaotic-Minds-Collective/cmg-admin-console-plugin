@@ -16,7 +16,7 @@ The **Chaotic Minds Gaming (CMG) ATLAS Admin Console Plugin** provides a React d
 <!-- coderabbit-ai-generated-section:v1:5343b04ed580d74b263c4928f8f3be6c401a3542e35f1b2cd09070ee41f0bed3 -->
 
 - Python 3.10 or later
-- Node.js 20 or later and npm
+- Node.js `^20.19.0 || >=22.12.0` and npm 11.21.3
 - The game server/RCON configuration required by your deployment
 - `mcrcon`, available on the admin API process's `PATH` and executable by that process, is required for broadcasts.
 
@@ -41,12 +41,19 @@ Set `RCON_PASSWORD` securely for the same shell or deployment; do not paste it i
 
 ## Configure the frontend
 
+Existing Create React App deployments must rename their build-time settings before rebuilding the frontend:
+
+- `REACT_APP_API_BASE_URL` → `VITE_API_BASE_URL`
+- `REACT_APP_STATUS_API_URL` → `VITE_STATUS_API_URL`
+
+Vite does not read the old `REACT_APP_*` names. Update the deployment environment variables and rebuild/redeploy the frontend so the new `VITE_*` values are embedded in the generated assets.
+
 The React build only needs the public API URLs; these are not secrets:
 
-- `REACT_APP_API_BASE_URL`: Flask admin API URL, default `http://localhost:5000`.
-- `REACT_APP_STATUS_API_URL`: grid/restart status API URL, default `http://localhost:5050`.
+- `VITE_API_BASE_URL`: Flask admin API URL, default `http://localhost:5000`.
+- `VITE_STATUS_API_URL`: grid/restart status API URL, default `http://localhost:5050`.
 
-For production, serve the UI and both APIs over HTTPS and configure the backend origins to exactly match the UI origin. Enter the `ADMIN_API_TOKEN` in the Admin Panel; it is held in page memory and sent only with admin requests.
+The Vite frontend exposes only variables prefixed with `VITE_`; keep secrets in the backend environment. For production, serve the UI and both APIs over HTTPS and configure the backend origins to exactly match the UI origin. Enter the `ADMIN_API_TOKEN` in the Admin Panel; it is held in page memory and sent only with admin requests.
 
 ## Run locally
 
@@ -65,13 +72,16 @@ cd server
 python grid_status_api.py
 ```
 
-In a third terminal, start the React client:
+In a third terminal, start the React client (Vite development server on port 3000):
 
 ```powershell
+npm install --global npm@11.21.3
 cd client
 npm install
 npm start
 ```
+
+Run the frontend regression tests with `npm test`. Create the production build with `npm run build`; Vite writes the assets to `client/build`.
 
 To run the optional log monitor, configure its required log paths for your server and run `python log_monitor.py` from `server/`.
 

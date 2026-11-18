@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import './MobileDashboard.css';
 
-const API_BASE_URL = process.env.REACT_APP_STATUS_API_URL || 'http://localhost:5050';
+const API_BASE_URL = import.meta.env.VITE_STATUS_API_URL || 'http://localhost:5050';
 
 export default function MobileDashboard() {
   const [restartTime, setRestartTime] = useState(null);
