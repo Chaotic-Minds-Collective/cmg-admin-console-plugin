@@ -45,7 +45,9 @@ jobs:
           cache: npm
           cache-dependency-path: client/package-lock.json
       - name: Regenerate the lockfile from the pinned frontend dependencies
-        run: npm install --package-lock-only --ignore-scripts --no-audit --no-fund
+        run: |
+          rm -f package-lock.json
+          npm install --package-lock-only --ignore-scripts --no-audit --no-fund
       - name: Commit the regenerated lockfile to this migration branch
         env:
           HEAD_REF: ${{ github.head_ref }}
