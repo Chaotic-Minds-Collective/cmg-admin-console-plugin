@@ -1,6 +1,7 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import { act } from 'react-dom/test-utils';
+import { expect, test, vi } from 'vitest';
 import AdminPanel from './AdminPanel';
 
 global.IS_REACT_ACT_ENVIRONMENT = true;
@@ -8,8 +9,8 @@ global.IS_REACT_ACT_ENVIRONMENT = true;
 test('admin actions and config preserve HTTP errors when the response is not JSON', async () => {
   const container = document.createElement('div');
   const root = createRoot(container);
-  global.alert = jest.fn();
-  global.fetch = jest.fn();
+  global.alert = vi.fn();
+  global.fetch = vi.fn();
   act(() => root.render(<AdminPanel />));
   try {
     for (const label of ['Start Server', 'Stop Server', 'Broadcast', 'Load Config']) {
@@ -33,8 +34,8 @@ test('admin actions and config preserve HTTP errors when the response is not JSO
 test('config loading reports invalid successful JSON and preserves the last valid config', async () => {
   const container = document.createElement('div');
   const root = createRoot(container);
-  global.alert = jest.fn();
-  global.fetch = jest.fn();
+  global.alert = vi.fn();
+  global.fetch = vi.fn();
   act(() => root.render(<AdminPanel />));
   try {
     const button = [...container.querySelectorAll('button')].find(node => node.textContent === 'Load Config');
